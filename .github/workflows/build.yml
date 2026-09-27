@@ -1,0 +1,46 @@
+name: Build
+run-name: ${{ inputs.sha }}
+
+# Builds the private repo chattrorg/chattr-app here, because GitHub's macOS runners are free for
+# public repos. This repo holds only this file: the job checks out the given commit with a
+# read-only deploy key and runs the build steps from it (.github/actions/ios-build), which keep
+# everything readable here free of source. Builds are dispatched from Florian's VPS
+# (~/chattr-ota), which also decrypts and publishes the IPA.
+
+on:
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: chattr-app commit to build
+        required: true
+
+concurrency:
+  group: chattr-ios
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  build:
+    # Override without a code change: gh variable set MACOS_RUNNER --body <label>
+    runs-on: ${{ vars.MACOS_RUNNER || 'xcode-27' }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          repository: chattrorg/chattr-app
+          ref: ${{ inputs.sha }}
+          ssh-key: ${{ secrets.SOURCE_DEPLOY_KEY }}
+          persist-credentials: false
+
+      # chattr-app's own workflow ended at run 136, so build numbers continue from there.
+      - name: Build number
+        run: echo "BUILD_NUMBER=$((GITHUB_RUN_NUMBER + 136))" >> "$GITHUB_ENV"
+
+      - uses: ./.github/actions/ios-build
+        with:
+          build-number: ${{ env.BUILD_NUMBER }}
+          p12-base64: ${{ secrets.IOS_DIST_P12_BASE64 }}
+          p12-password: ${{ secrets.IOS_DIST_P12_PASSWORD }}
+          profile-base64: ${{ secrets.IOS_ADHOC_PROFILE_BASE64 }}
+          artifact-key: ${{ secrets.ARTIFACT_KEY }}
