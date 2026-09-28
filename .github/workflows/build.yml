@@ -13,6 +13,10 @@ on:
       sha:
         description: chattr-app commit to build
         required: true
+      full:
+        description: Archive fully optimized (whole-module, dSYM) instead of the fast incremental build
+        type: boolean
+        default: false
 
 concurrency:
   group: chattr-ios
@@ -44,3 +48,4 @@ jobs:
           p12-password: ${{ secrets.IOS_DIST_P12_PASSWORD }}
           profile-base64: ${{ secrets.IOS_ADHOC_PROFILE_BASE64 }}
           artifact-key: ${{ secrets.ARTIFACT_KEY }}
+          full: ${{ inputs.full }}
