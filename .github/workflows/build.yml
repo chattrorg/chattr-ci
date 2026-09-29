@@ -2,10 +2,10 @@ name: Build
 run-name: ${{ inputs.sha }}
 
 # Builds the private repo chattrorg/chattr-app here, because GitHub's macOS runners are free for
-# public repos. This repo holds only this file: the job checks out the given commit with a
-# read-only deploy key and runs the build steps from it (.github/actions/ios-build), which keep
-# everything readable here free of source. Builds are dispatched from Florian's VPS
-# (~/chattr-ota), which also decrypts and publishes the IPA.
+# public repos. This repo holds only workflows (this one, and test.yml for the tests): the job
+# checks out the given commit with a read-only deploy key and runs the build steps from it
+# (.github/actions/ios-build), which keep everything readable here free of source. Builds are
+# dispatched from Florian's VPS (~/chattr-ota), which also decrypts and publishes the IPA.
 
 on:
   workflow_dispatch:
